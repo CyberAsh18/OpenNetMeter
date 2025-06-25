@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace OpenNetMeter.Utilities
 {
-    internal class AsyncTask : IAsyncDisposable
+    internal class AsyncTask : IDisposable
     {
         public Task? Task { get; set; }
         public PeriodicTimer Timer { get; set; }
@@ -24,7 +24,7 @@ namespace OpenNetMeter.Utilities
             CancelToken = new CancellationTokenSource();
         }
         
-        private async Task StopProcessAsync()
+        private async void StopProcess()
         {
             try
             {
@@ -36,7 +36,6 @@ namespace OpenNetMeter.Utilities
                 CancelToken.Cancel();
                 await Task;
                 Task = null;
-                Timer.Dispose();
                 CancelToken.Dispose();
                 Debug.WriteLine("Operation Cancelled");
             }
@@ -46,6 +45,9 @@ namespace OpenNetMeter.Utilities
             }
         }
 
-        public async ValueTask DisposeAsync() => await StopProcessAsync();
+        public void Dispose()
+        {
+            StopProcess();
+        }
     }
 }
