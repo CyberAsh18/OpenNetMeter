@@ -122,7 +122,7 @@ namespace OpenNetMeter.ViewModels
             }
         }
 
-        private async void Svm_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+        private void Svm_PropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
             switch (e.PropertyName)
             {
@@ -131,7 +131,7 @@ namespace OpenNetMeter.ViewModels
                     {
                         if (netProc.IsNetworkOnline != "Disconnected")
                         {
-                            await netProc.EndNetworkProcessAsync();
+                            netProc.EndNetworkProcess();
                             duhvm.DeleteAllDBFiles();
                             netProc.StartNetworkProcess();
                         }
@@ -377,7 +377,7 @@ namespace OpenNetMeter.ViewModels
             if (netProc != null)
             {
                 netProc.PropertyChanged -= NetProc_PropertyChanged;
-                netProc.DisposeAsync().GetAwaiter().GetResult();
+                netProc.Dispose();
             }
         }
     }
