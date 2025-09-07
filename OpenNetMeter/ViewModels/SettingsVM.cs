@@ -6,6 +6,8 @@ using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Windows.Input;
+using System.Windows;
+using System.Threading.Tasks;
 using TaskScheduler = Microsoft.Win32.TaskScheduler;
 
 
@@ -176,6 +178,7 @@ namespace OpenNetMeter.ViewModels
             }
         }
         public ICommand ResetBtn { get; set; }
+        public ICommand UpdateCmd { get; set; }
 
         private ConfirmationDialogVM? cdvm;
         private MiniWidgetVM? mwvm;
@@ -207,6 +210,7 @@ namespace OpenNetMeter.ViewModels
             NetworkSpeedFormat = SettingsManager.Current.NetworkSpeedFormat;
 
             ResetBtn = new BaseCommand(ResetData, true);
+            UpdateCmd = new BaseCommand(async (o) => await CheckForUpdateAsync(), true);
 
             DeleteAllFiles = false;
         }
@@ -237,6 +241,24 @@ namespace OpenNetMeter.ViewModels
                     DeleteAllFiles = true;
                 if (cdvm != null)
                     cdvm.IsVisible = System.Windows.Visibility.Hidden;
+            }
+        }
+
+        private async Task CheckForUpdateAsync()
+        {
+            var result = await Updater.CheckForUpdate();
+            if (result.Item1 && result.Item2 != null)
+            {
+                if (MessageBox.Show($"Update {result.Item3} available. Download?", "OpenNetMeter", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+                {
+                    string dest = Path.Combine(AppContext.BaseDirectory, Path.GetFileName(result.Item2));
+                    if (await Updater.DownloadUpdate(result.Item2, dest))
+                        MessageBox.Show($"Downloaded to {dest}", "OpenNetMeter");
+                }
+            }
+            else
+            {
+                MessageBox.Show("You are running the latest version.", "OpenNetMeter");
             }
         }
 
